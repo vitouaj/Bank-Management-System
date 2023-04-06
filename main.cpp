@@ -2,6 +2,7 @@
 #include <string>
 #include <list>
 #include <map>
+#include <chrono>
 
 class Utils{
 public:
@@ -13,6 +14,14 @@ public:
         std::string id = "aba_" + nationalID;
         return id;
     }
+
+    static std::string timepoint_to_date_time_str(std::chrono::system_clock::time_point tp) {
+        std::time_t tt = std::chrono::system_clock::to_time_t(tp);
+
+        char dt[80];
+        std::strftime(dt, sizeof(dt), "%d-%m-%Y %H:%M:%S", std::localtime(&tt));
+        return dt;
+    }
 };
 
 class Account{
@@ -20,8 +29,9 @@ private:
     double balance;
     std::string accountId;
     std::string accountHolderName;
+    std::chrono::system_clock::time_point createdDate;
 public:
-    Account(const std::string& name): balance(0) {
+    Account(const std::string& name): balance(0), createdDate(std::chrono::system_clock::now()) {
         accountHolderName = name;
         std::cout << "Successfully Created new Account..." << std::endl;
     }
@@ -29,6 +39,7 @@ public:
         accountHolderName = name;
         accountId = acc_id;
         balance = amount;
+        createdDate = std::chrono::system_clock::now();
         std::cout << "Successfully Created Account..." << std::endl;
     }
     void printAccount() {
@@ -36,6 +47,7 @@ public:
         std::cout << "==        Account ID: " << accountId << std::endl;
         std::cout << "==        Account HolderName: " << accountHolderName << std::endl;
         std::cout << "==        Account Balance: " << balance << std::endl;
+        std::cout << "==        Created Date: " << Utils::timepoint_to_date_time_str(createdDate) << std::endl;
         std::cout << "========================================================\n" << std::endl;
     }
     double getBalance() const {
@@ -47,6 +59,10 @@ public:
     std::string getAccountHolderName() const {
         return accountHolderName;
     }
+    std::string getCreatedDate() const {
+        return Utils::timepoint_to_date_time_str(createdDate);
+    }
+
     void deposit(double amount);
     void withdraw(double amount);
     void transfer(double amount, const std::string& acc_id);
@@ -67,7 +83,7 @@ public:
     void printAccountList() {
         std::map<std::string, Account>::iterator it = accountList.begin();
         while (it != accountList.end()) {
-            std::cout << "AccountID: " << it->first << ", With Account Holder: " << it->second.getAccountHolderName() << std::endl;
+            std::cout << "AccountID: " << it->first << ", Account Holder: " << it->second.getAccountHolderName() << ", Created on " << it->second.getCreatedDate() << std::endl;
             ++it;
         }
     }
@@ -195,9 +211,6 @@ void menu() {
     std::cout << "6. check balance" << std::endl;
     std::cout << "7. transfer money" << std::endl;
 }
-
-
-
 int main()
 {
     system("cls");
